@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net"
+	"net/http"
 	"time"
 
 	"github.com/briandowns/spinner"
@@ -48,7 +52,33 @@ func main() {
 		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name)
 		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate)
 		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate)
+		// fmt.Println("Website IP", domainIP)
+		// json, _ := http.Get("https://ipinfo.io/", net.LookupIP(parsed.Domain.Domain))
+		// fmt.Println(json)
+		domainIP, _ := net.LookupIP(parsed.Domain.Domain)
+		getLocation("20.69.96.99") // testing ip for now
+		println(domainIP)
 	} else {
 		fmt.Println("This isnt a registered domain")
 	}
+
+}
+
+// function to get location from given ip
+func getLocation(domain string) {
+	fmt.Println(readRequest("https://ipinfo.io/" + domain))
+} // fix
+
+// helper function to make a request to a web page
+func readRequest(link string) string {
+	res, err := http.Get(link)
+	if err != nil {
+		log.Fatal(err)
+	}
+	content, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(content)
 }
