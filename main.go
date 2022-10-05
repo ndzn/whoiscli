@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -16,6 +16,11 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// TODO:
+// add selection for what data you want, if you only want registration data, website data, etc.
+// fetch from real nameserver and parse
+
+// prompts domain and handles basic ui for the
 func main() {
 	domain := func(input string) error {
 		return nil
@@ -81,7 +86,7 @@ func readRequest(link string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	content, err := ioutil.ReadAll(res.Body)
+	content, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		log.Fatal(err)
