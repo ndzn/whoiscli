@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -42,7 +43,7 @@ func main() {
 		fmt.Printf("That isnt a valid domain. Please try again\n")
 		return
 	} else {
-		fmt.Println("Getting whois info...\n")
+		fmt.Println("Getting whois info...")
 	}
 	parsed, err := whoisparser.Parse(whoisInfo)
 	if err == nil {
@@ -52,12 +53,8 @@ func main() {
 		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name)
 		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate)
 		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate)
-		// fmt.Println("Website IP", domainIP)
-		// json, _ := http.Get("https://ipinfo.io/", net.LookupIP(parsed.Domain.Domain))
-		// fmt.Println(json)
-		//domainIP, _ := net.LookupIP(parsed.Domain.Domain)
-		// fmt.Println(color.YellowString("Data from Domain's website"))
-		getLocation("8.8.8.8") // testing ip for now
+		domainIP, _ := net.LookupIP(parsed.Domain.Domain)
+		getLocation(domainIP[0].String())
 	} else {
 		fmt.Println("This isn't a registered domain. (Is the spelling correct?)")
 	}
@@ -67,12 +64,11 @@ func main() {
 // function to get location from given ip from domain
 func getLocation(ip string) {
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
-	s.FinalMSG = color.GreenString("Website provider data:\n")
+	s.FinalMSG = color.GreenString("Website Provider Data:\n")
 	s.Start()
 	json := readRequest("https://ipinfo.io/" + ip)
 	s.Stop()
-	// fmt.Println(json)
-	// region := gjson.Get(json, "region")
+	fmt.Println("Website IP", ip)
 	fmt.Println("Region:", gjson.Get(json, "region"))
 	fmt.Println("City:", gjson.Get(json, "city"))
 	fmt.Println("Country:", gjson.Get(json, "country"))
