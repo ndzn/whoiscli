@@ -40,7 +40,6 @@ func main() {
 
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
 	s.FinalMSG = color.GreenString("Returned Whois Data:\n")
-
 	s.Start()
 
 	whoisInfo, err := whois.Whois(result)
@@ -50,6 +49,7 @@ func main() {
 	} else {
 		fmt.Println("Getting whois info...")
 	}
+
 	parsed, err := whoisparser.Parse(whoisInfo)
 	if err == nil {
 		fmt.Print("\033[H\033[2J")
@@ -59,6 +59,7 @@ func main() {
 		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate)
 		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate)
 		fmt.Println(color.GreenString("Nameservers: "))
+
 		for _, v := range parsed.Domain.NameServers {
 			fmt.Println(v)
 		}
@@ -76,7 +77,7 @@ func getLocation(ip string) {
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
 	s.FinalMSG = color.GreenString("Website Provider Data:\n")
 	s.Start()
-	json := readRequest("https://ipinfo.io/" + ip + "/json")
+	json := request("https://ipinfo.io/" + ip + "/json")
 	if gjson.Get(json, "status").String() == "404" {
 		fmt.Println("Invalid IP")
 	} else {
@@ -96,7 +97,7 @@ func getLocation(ip string) {
 } // fix
 
 // helper function to make a request to a web page
-func readRequest(link string) string {
+func request(link string) string {
 	res, err := http.Get(link)
 	if err != nil {
 		log.Fatal(err)
