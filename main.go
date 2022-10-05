@@ -58,7 +58,12 @@ func main() {
 		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name)
 		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate)
 		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate)
+		fmt.Println(color.GreenString("Nameservers: "))
+		for _, v := range parsed.Domain.NameServers {
+			fmt.Println(v)
+		}
 		domainIP, _ := net.LookupIP(parsed.Domain.Domain)
+
 		getLocation(domainIP[0].String())
 	} else {
 		fmt.Println("This isn't a registered domain. (Is the spelling correct?)")
@@ -71,13 +76,23 @@ func getLocation(ip string) {
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
 	s.FinalMSG = color.GreenString("Website Provider Data:\n")
 	s.Start()
-	json := readRequest("https://ipinfo.io/" + ip)
-	s.Stop()
-	fmt.Println("Website IP", ip)
-	fmt.Println("Region:", gjson.Get(json, "region"))
-	fmt.Println("City:", gjson.Get(json, "city"))
-	fmt.Println("Country:", gjson.Get(json, "country"))
-	fmt.Println("Provider:", gjson.Get(json, "org"))
+	json := readRequest("https://ipinfo.io/" + ip + "/json")
+	if gjson.Get(json, "status").String() == "404" {
+		fmt.Println("Invalid IP")
+	} else {
+		s.Stop()
+		fmt.Println(color.GreenString("IP: "), gjson.Get(json, "ip").String())
+		fmt.Println(color.GreenString("City: "), gjson.Get(json, "city").String())
+		fmt.Println(color.GreenString("Region: "), gjson.Get(json, "region").String())
+		fmt.Println(color.GreenString("Country: "), gjson.Get(json, "country").String())
+		fmt.Println(color.GreenString("Location: "), gjson.Get(json, "loc").String())
+		if gjson.Get(json, "hostname").String() == "" {
+			fmt.Println(color.GreenString("Hostname: "), "No hostname found")
+		} else {
+			fmt.Println(color.GreenString("Hostname: "), gjson.Get(json, "hostname").String())
+		}
+		fmt.Println(color.GreenString("Org: "), gjson.Get(json, "org").String())
+	}
 } // fix
 
 // helper function to make a request to a web page
