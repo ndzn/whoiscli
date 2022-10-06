@@ -21,9 +21,6 @@ import (
 // fetch from real nameserver and parse
 
 // prompts domain and handles basic ui for the program
-
-var b = "----------------------------------------"
-
 func main() {
 	domain := func(input string) error {
 		return nil
@@ -53,30 +50,43 @@ func main() {
 		fmt.Println("Getting whois info...")
 	}
 	parsed, err := whoisparser.Parse(whoisInfo)
+	domainIP, _ := net.LookupIP(parsed.Domain.Domain)
 	if err == nil {
-		fmt.Print("\033[H\033[2J")
+		fmt.Println("\033[H\033[2J")
 		s.Stop()
-		fmt.Println(color.GreenString("Domain: ")+parsed.Domain.Domain, "\n"+b)
-		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name, "\n"+b)
-		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate, "\n"+b)
-		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate, "\n"+b)
+		fmt.Println(color.GreenString("Domain: ") + parsed.Domain.Domain)
+		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name)
+		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate)
+		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate)
 		fmt.Println(color.GreenString("Nameservers: "))
 
 		for _, v := range parsed.Domain.NameServers {
 			fmt.Println(v)
 		}
-		domainIP, _ := net.LookupIP(parsed.Domain.Domain)
 
-		getLocation(domainIP[0].String())
 	} else {
 		fmt.Println("This isn't a registered domain. (Is the spelling correct?)")
+	}
+
+	confirm := promptui.Prompt{
+		Label:     "Show Webserver Data",
+		IsConfirm: true,
+	}
+
+	confirmResult, err := confirm.Run()
+	if err != nil {
+		fmt.Printf("%v", err)
+		return
+	}
+
+	if confirmResult == "y" {
+		getLocation(domainIP[0].String())
 	}
 
 }
 
 // function to get location from given ip from domain
 func getLocation(ip string) {
-	println("\n" + b)
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
 	s.FinalMSG = color.GreenString("Website Provider Data:\n")
 	s.Start()
@@ -86,20 +96,20 @@ func getLocation(ip string) {
 	}
 	json := request("https://ipinfo.io/" + ip + "/json")
 	if gjson.Get(json, "status").String() == "404" {
-		fmt.Println("Invalid IP")
+		fmt.Println("No IP found")
 	} else {
 		s.Stop()
-		fmt.Print(color.GreenString("IP: "), gjson.Get(json, "ip").String())
-		fmt.Println(color.GreenString(" City: "), gjson.Get(json, "city").String())
-		fmt.Print(color.GreenString("Region: "), gjson.Get(json, "region").String())
-		fmt.Println(color.GreenString(" Country: "), gjson.Get(json, "country").String())
-		fmt.Print(color.GreenString("Location: "), gjson.Get(json, "loc").String())
+		fmt.Println(color.GreenString("IP: "), gjson.Get(json, "ip").String())
+		fmt.Println(color.GreenString("City: "), gjson.Get(json, "city").String())
+		fmt.Println(color.GreenString("Region: "), gjson.Get(json, "region").String())
+		fmt.Println(color.GreenString("Country: "), gjson.Get(json, "country").String())
+		fmt.Println(color.GreenString("Location: "), gjson.Get(json, "loc").String())
 		if gjson.Get(json, "hostname").String() == "" {
-			fmt.Println(color.GreenString(" Hostname: "), "No hostname found")
+			fmt.Println(color.GreenString("Hostname: "), "No hostname found")
 		} else {
-			fmt.Println(color.GreenString(" Hostname: "), gjson.Get(json, "hostname").String())
+			fmt.Println(color.GreenString("Hostname: "), gjson.Get(json, "hostname").String())
 		}
-		fmt.Print(color.GreenString("Org: "), gjson.Get(json, "org").String())
+		fmt.Println(color.GreenString("Org: "), gjson.Get(json, "org").String())
 	}
 } // fix
 
