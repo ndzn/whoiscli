@@ -5,10 +5,10 @@ go 1.19
 require (
 	github.com/briandowns/spinner v1.19.0
 	github.com/fatih/color v1.13.0
-	github.com/likexian/whois v1.14.2
 	github.com/likexian/whois-parser v1.24.1
 	github.com/manifoldco/promptui v0.9.0
 	github.com/tidwall/gjson v1.14.3
+	github.com/undiabler/golang-whois v0.0.0-20200529150455-5fb8fbf53359
 )
 
 require (
@@ -18,7 +18,6 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
-	github.com/undiabler/golang-whois v0.0.0-20200529150455-5fb8fbf53359 // indirect
 	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
 	golang.org/x/text v0.3.7 // indirect
