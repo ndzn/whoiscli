@@ -10,17 +10,20 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
-	"github.com/likexian/whois"
 	whoisparser "github.com/likexian/whois-parser"
 	"github.com/manifoldco/promptui"
 	"github.com/tidwall/gjson"
+	whois "github.com/undiabler/golang-whois"
 )
 
 // TODO:
 // add selection for what data you want, if you only want registration data, website data, etc.
 // fetch from real nameserver and parse
 
-// prompts domain and handles basic ui for the
+// prompts domain and handles basic ui for the program
+
+var b = "----------------------------------------"
+
 func main() {
 	domain := func(input string) error {
 		return nil
@@ -42,22 +45,21 @@ func main() {
 	s.FinalMSG = color.GreenString("Returned Whois Data:\n")
 	s.Start()
 
-	whoisInfo, err := whois.Whois(result)
+	whoisInfo, err := whois.GetWhois(result)
 	if err != nil {
 		fmt.Printf("That isnt a valid domain. Please try again\n")
 		return
 	} else {
 		fmt.Println("Getting whois info...")
 	}
-
 	parsed, err := whoisparser.Parse(whoisInfo)
 	if err == nil {
 		fmt.Print("\033[H\033[2J")
 		s.Stop()
-		fmt.Println(color.GreenString("Domain: ") + parsed.Domain.Domain)
-		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name)
-		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate)
-		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate)
+		fmt.Println(color.GreenString("Domain: ")+parsed.Domain.Domain, "\n"+b)
+		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name, "\n"+b)
+		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate, "\n"+b)
+		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate, "\n"+b)
 		fmt.Println(color.GreenString("Nameservers: "))
 
 		for _, v := range parsed.Domain.NameServers {
@@ -74,25 +76,30 @@ func main() {
 
 // function to get location from given ip from domain
 func getLocation(ip string) {
+	println("\n" + b)
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
 	s.FinalMSG = color.GreenString("Website Provider Data:\n")
 	s.Start()
+	if ip == "" {
+		fmt.Println("No IP found")
+		return
+	}
 	json := request("https://ipinfo.io/" + ip + "/json")
 	if gjson.Get(json, "status").String() == "404" {
 		fmt.Println("Invalid IP")
 	} else {
 		s.Stop()
-		fmt.Println(color.GreenString("IP: "), gjson.Get(json, "ip").String())
-		fmt.Println(color.GreenString("City: "), gjson.Get(json, "city").String())
-		fmt.Println(color.GreenString("Region: "), gjson.Get(json, "region").String())
-		fmt.Println(color.GreenString("Country: "), gjson.Get(json, "country").String())
-		fmt.Println(color.GreenString("Location: "), gjson.Get(json, "loc").String())
+		fmt.Print(color.GreenString("IP: "), gjson.Get(json, "ip").String())
+		fmt.Println(color.GreenString(" City: "), gjson.Get(json, "city").String())
+		fmt.Print(color.GreenString("Region: "), gjson.Get(json, "region").String())
+		fmt.Println(color.GreenString(" Country: "), gjson.Get(json, "country").String())
+		fmt.Print(color.GreenString("Location: "), gjson.Get(json, "loc").String())
 		if gjson.Get(json, "hostname").String() == "" {
-			fmt.Println(color.GreenString("Hostname: "), "No hostname found")
+			fmt.Println(color.GreenString(" Hostname: "), "No hostname found")
 		} else {
-			fmt.Println(color.GreenString("Hostname: "), gjson.Get(json, "hostname").String())
+			fmt.Println(color.GreenString(" Hostname: "), gjson.Get(json, "hostname").String())
 		}
-		fmt.Println(color.GreenString("Org: "), gjson.Get(json, "org").String())
+		fmt.Print(color.GreenString("Org: "), gjson.Get(json, "org").String())
 	}
 } // fix
 
