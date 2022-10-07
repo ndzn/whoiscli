@@ -10,18 +10,33 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
+	"github.com/likexian/whois"
 	whoisparser "github.com/likexian/whois-parser"
 	"github.com/manifoldco/promptui"
 	"github.com/tidwall/gjson"
-	whois "github.com/undiabler/golang-whois"
 )
 
 // TODO:
 // add selection for what data you want, if you only want registration data, website data, etc.
 // fetch from real nameserver and parse
 
-// prompts domain and handles basic ui for the program
+// main function to run the program
 func main() {
+	for {
+		getWhois()
+		prompt := promptui.Prompt{
+			Label:     "Lookup another domain",
+			IsConfirm: true,
+		}
+		_, err := prompt.Run()
+		if err != nil {
+			break
+		}
+	}
+}
+
+// prompts domain and handles basic ui for the program
+func getWhois() {
 	domain := func(input string) error {
 		return nil
 	}
@@ -42,28 +57,29 @@ func main() {
 	s.FinalMSG = color.GreenString("Returned Whois Data:\n")
 	s.Start()
 
-	whoisInfo, err := whois.GetWhois(result)
+	whoisInfo, err := whois.Whois(result)
 	if err != nil {
-		fmt.Printf("That isnt a valid domain. Please try again\n")
+		s.Stop()
+		fmt.Println(color.RedString("Invalid domain"))
 		return
-	} else {
-		fmt.Println("Getting whois info...")
 	}
+
 	parsed, err := whoisparser.Parse(whoisInfo)
+
 	domainIP, _ := net.LookupIP(parsed.Domain.Domain)
+	s.Stop()
 	if err == nil {
 		fmt.Println("\033[H\033[2J")
-		s.Stop()
 		fmt.Println(color.GreenString("Domain: ") + parsed.Domain.Domain)
 		fmt.Println(color.GreenString("Registered @: "), parsed.Registrar.Name)
 		fmt.Println(color.GreenString("Created: "), parsed.Domain.CreatedDate)
 		fmt.Println(color.GreenString("Expires: "), parsed.Domain.ExpirationDate)
+		fmt.Println(color.GreenString("Last Updated: "), parsed.Domain.UpdatedDate)
 		fmt.Println(color.GreenString("Nameservers: "))
 
 		for _, v := range parsed.Domain.NameServers {
 			fmt.Println(v)
 		}
-
 	} else {
 		fmt.Println("This isn't a registered domain. (Is the spelling correct?)")
 	}
@@ -82,11 +98,6 @@ func main() {
 	if confirmResult == "y" {
 		getLocation(domainIP[0].String())
 	}
-
-	for {
-		time.Sleep(1 * time.Second)
-	}
-
 }
 
 // function to get location from given ip from domain
@@ -98,6 +109,7 @@ func getLocation(ip string) {
 		fmt.Println("No IP found")
 		return
 	}
+	// uses the request function to get the json data and prints it out
 	json := request("https://ipinfo.io/" + ip + "/json")
 	if gjson.Get(json, "status").String() == "404" {
 		fmt.Println("No IP found")
@@ -115,7 +127,7 @@ func getLocation(ip string) {
 		}
 		fmt.Println(color.GreenString("Org: "), gjson.Get(json, "org").String())
 	}
-} // fix
+}
 
 // helper function to make a request to a web page
 func request(link string) string {
