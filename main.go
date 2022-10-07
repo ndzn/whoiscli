@@ -19,8 +19,9 @@ import (
 // TODO:
 // add selection for what data you want, if you only want registration data, website data, etc.
 // fetch from real nameserver and parse
+// fix some cctld's whois servers returning unparseable data
 
-// main function to run the program
+// main function to run the program, loops and asks for repeat
 func main() {
 	for {
 		getWhois()
@@ -40,7 +41,7 @@ func getWhois() {
 	domain := func(input string) error {
 		return nil
 	}
-
+	// build the prompt
 	prompt := promptui.Prompt{
 		Label:    "Domain to lookup",
 		Validate: domain,
@@ -52,21 +53,24 @@ func getWhois() {
 		fmt.Printf("Prompt failed")
 		return
 	}
-
+	// build loading icon
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
 	s.FinalMSG = color.GreenString("Returned Whois Data:\n")
 	s.Start()
 
+	// makes whoisInfo the result of the whois lookup
 	whoisInfo, err := whois.Whois(result)
 	if err != nil {
 		s.Stop()
 		fmt.Println(color.RedString("Invalid domain"))
 		return
 	}
-
+	// parses the whois data
 	parsed, err := whoisparser.Parse(whoisInfo)
 
+	// get the ip from the local dns using the built-in net package
 	domainIP, _ := net.LookupIP(parsed.Domain.Domain)
+	// return parsed whois data
 	s.Stop()
 	if err == nil {
 		fmt.Println("\033[H\033[2J")
@@ -88,7 +92,7 @@ func getWhois() {
 		Label:     "Show Webserver Data",
 		IsConfirm: true,
 	}
-
+	// build confirmation prompt
 	confirmResult, err := confirm.Run()
 	if err != nil {
 		fmt.Printf("%v", err)
@@ -100,7 +104,7 @@ func getWhois() {
 	}
 }
 
-// function to get location from given ip from domain
+// function to get location and information about the webserver from the resolved ip for the domain
 func getLocation(ip string) {
 	s := spinner.New(spinner.CharSets[26], 100*time.Millisecond)
 	s.FinalMSG = color.GreenString("Website Provider Data:\n")
