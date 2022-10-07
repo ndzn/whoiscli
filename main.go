@@ -83,6 +83,10 @@ func main() {
 		getLocation(domainIP[0].String())
 	}
 
+	for {
+		time.Sleep(1 * time.Second)
+	}
+
 }
 
 // function to get location from given ip from domain
