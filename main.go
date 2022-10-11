@@ -1,9 +1,9 @@
+
 package main
 
 import (
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"time"
@@ -137,12 +137,12 @@ func getLocation(ip string) {
 func request(link string) string {
 	res, err := http.Get(link)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error requesting content.")
 	}
 	content, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error requesting content.")
 	}
 	return string(content)
 }
