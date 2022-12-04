@@ -1,4 +1,4 @@
-module whoisgui
+module github.com/ndzn/whoiscli
 
 go 1.19
 
